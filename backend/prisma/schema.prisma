@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  REPORTER
+  REVIEWER
+  ADMIN
+}
+
+enum IncidentSeverity {
+  P1
+  P2
+  P3
+  P4
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(REPORTER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdIncidents     Incident[]     @relation("IncidentCreator")
+  timelineEvents       TimelineEvent[] @relation("TimelineEventCreator")
+  reviews              Review[]       @relation("ReviewCreator")
+  shareLinks           ShareLink[]    @relation("ShareLinkCreator")
+
+  @@map("users")
+}
+
+model Incident {
+  id        String           @id @default(cuid())
+  title     String
+  severity  IncidentSeverity
+  status    IncidentStatus   @default(OPEN)
+  tags      String[]         // Array of tags
+  createdBy String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  creator       User            @relation("IncidentCreator", fields: [createdBy], references: [id])
+  timelineEvents TimelineEvent[]
+  reviews       Review[]
+  shareLinks    ShareLink[]
+
+  @@map("incidents")
+}
+
+model TimelineEvent {
+  id         String   @id @default(cuid())
+  incidentId String
+  content    String   // Markdown content
+  createdBy  String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  creator  User     @relation("TimelineEventCreator", fields: [createdBy], references: [id])
+
+  @@map("timeline_events")
+}
+
+model Review {
+  id         String          @id @default(cuid())
+  incidentId String
+  status     IncidentStatus
+  comment    String?
+  reviewedBy String
+  reviewedAt DateTime        @default(now())
+
+  // Relations
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  reviewer User     @relation("ReviewCreator", fields: [reviewedBy], references: [id])
+
+  @@map("reviews")
+}
+
+model ShareLink {
+  id         String   @id @default(cuid())
+  incidentId String
+  token      String   @unique
+  expiresAt  DateTime
+  createdBy  String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  creator  User     @relation("ShareLinkCreator", fields: [createdBy], references: [id])
+
+  @@map("share_links")
+}
