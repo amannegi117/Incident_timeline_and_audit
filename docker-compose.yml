@@ -5,8 +5,8 @@ services:
     image: postgres:15-alpine
     environment:
       POSTGRES_DB: incident_hub
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: aman
+      POSTGRES_PASSWORD: amanpass
     ports:
       - "5432:5432"
     volumes:
@@ -24,7 +24,7 @@ services:
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/incident_hub
+      DATABASE_URL: postgresql://aman:amanpass@postgres:5432/incident_hub
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       NODE_ENV: development
     depends_on:
@@ -41,7 +41,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: http://localhost:3001
+      VITE_API_URL: http://backend:3001
     depends_on:
       - backend
     volumes:
