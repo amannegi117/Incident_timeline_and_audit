@@ -41,3 +41,4 @@ backend/.env.*
 # Prisma (common local files)
 backend/prisma/dev.db
 backend/prisma/dev.db-journal
+
