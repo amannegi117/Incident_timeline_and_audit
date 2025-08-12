@@ -47,7 +47,7 @@ export async function createShareLink(id: string, expiresAt: string, token?: str
 }
 
 export async function fetchSharedIncident(tokenParam: string) {
-  return apiFetch(`/share/${tokenParam}`)
+  return apiFetch<Incident>(`/share/${tokenParam}`)
 }
 
 

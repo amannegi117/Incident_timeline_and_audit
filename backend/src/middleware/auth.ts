@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
-import { JWTPayload, AuthenticatedRequest } from '../types';
+import { JWTPayload } from '../types';
 
 export const authenticateToken = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -30,13 +30,14 @@ export const authenticateToken = async (
 
     req.user = user;
     next();
+    return;
   } catch (error) {
     return res.status(403).json({ error: 'Invalid or expired token' });
   }
 };
 
 export const requireRole = (allowedRoles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
@@ -46,6 +47,7 @@ export const requireRole = (allowedRoles: string[]) => {
     }
 
     next();
+    return;
   };
 };
 

@@ -45,7 +45,7 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
     return res.status(400).json({ error: 'Invalid JSON' });
   }
   
-  res.status(500).json({ error: 'Internal server error' });
+  return res.status(500).json({ error: 'Internal server error' });
 });
 
 // Graceful shutdown

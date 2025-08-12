@@ -1,8 +1,8 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { AuthenticatedRequest, CreateTimelineEventRequest } from '../types';
+import { CreateTimelineEventRequest } from '../types';
 
-export const addTimelineEvent = async (req: AuthenticatedRequest, res: Response) => {
+export const addTimelineEvent = async (req: Request, res: Response) => {
   try {
     const { id: incidentId } = req.params;
     const { content }: CreateTimelineEventRequest = req.body;
@@ -43,9 +43,9 @@ export const addTimelineEvent = async (req: AuthenticatedRequest, res: Response)
       }
     });
 
-    res.status(201).json(timelineEvent);
+    return res.status(201).json(timelineEvent);
   } catch (error) {
     console.error('Add timeline event error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

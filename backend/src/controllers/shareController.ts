@@ -1,9 +1,9 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { AuthenticatedRequest, CreateShareLinkRequest, ShareLinkResponse } from '../types';
+import { CreateShareLinkRequest, ShareLinkResponse } from '../types';
 import crypto from 'crypto';
 
-export const createShareLink = async (req: AuthenticatedRequest, res: Response) => {
+export const createShareLink = async (req: Request, res: Response) => {
   try {
     const { id: incidentId } = req.params;
     const { expiresAt }: CreateShareLinkRequest = req.body;
@@ -52,10 +52,10 @@ export const createShareLink = async (req: AuthenticatedRequest, res: Response) 
       url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/share/${token}`
     };
 
-    res.status(201).json(response);
+    return res.status(201).json(response);
   } catch (error) {
     console.error('Create share link error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -109,7 +109,7 @@ export const getSharedIncident = async (req: Request, res: Response) => {
     }
 
     // Return incident data (read-only)
-    res.json({
+    return res.json({
       ...shareLink.incident,
       shareLink: {
         expiresAt: shareLink.expiresAt,
@@ -118,6 +118,6 @@ export const getSharedIncident = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Get shared incident error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

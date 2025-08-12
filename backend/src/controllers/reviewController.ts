@@ -1,8 +1,8 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { AuthenticatedRequest, CreateReviewRequest } from '../types';
+import { CreateReviewRequest } from '../types';
 
-export const reviewIncident = async (req: AuthenticatedRequest, res: Response) => {
+export const reviewIncident = async (req: Request, res: Response) => {
   try {
     const { id: incidentId } = req.params;
     const { status, comment }: CreateReviewRequest = req.body;
@@ -77,9 +77,9 @@ export const reviewIncident = async (req: AuthenticatedRequest, res: Response) =
       return { incident: updatedIncident, review };
     });
 
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     console.error('Review incident error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

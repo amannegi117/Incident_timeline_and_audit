@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { AuthenticatedRequest, CreateIncidentRequest, UpdateIncidentRequest, IncidentFilters, PaginatedResponse, IncidentResponse } from '../types';
+import { CreateIncidentRequest, UpdateIncidentRequest, IncidentFilters, PaginatedResponse, IncidentResponse } from '../types';
 
-export const getIncidents = async (req: AuthenticatedRequest, res: Response) => {
+export const getIncidents = async (req: Request, res: Response) => {
   try {
     const {
       search,
@@ -97,14 +97,14 @@ export const getIncidents = async (req: AuthenticatedRequest, res: Response) => 
       }
     };
 
-    res.json(response);
+    return res.json(response);
   } catch (error) {
     console.error('Get incidents error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const getIncident = async (req: AuthenticatedRequest, res: Response) => {
+export const getIncident = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -148,14 +148,14 @@ export const getIncident = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    res.json(incident);
+    return res.json(incident);
   } catch (error) {
     console.error('Get incident error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const createIncident = async (req: AuthenticatedRequest, res: Response) => {
+export const createIncident = async (req: Request, res: Response) => {
   try {
     const { title, severity, tags }: CreateIncidentRequest = req.body;
 
@@ -183,14 +183,14 @@ export const createIncident = async (req: AuthenticatedRequest, res: Response) =
       }
     });
 
-    res.status(201).json(incident);
+    return res.status(201).json(incident);
   } catch (error) {
     console.error('Create incident error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const updateIncident = async (req: AuthenticatedRequest, res: Response) => {
+export const updateIncident = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updateData: UpdateIncidentRequest = req.body;
@@ -230,14 +230,14 @@ export const updateIncident = async (req: AuthenticatedRequest, res: Response) =
       }
     });
 
-    res.json(incident);
+    return res.json(incident);
   } catch (error) {
     console.error('Update incident error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const deleteIncident = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteIncident = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -259,9 +259,9 @@ export const deleteIncident = async (req: AuthenticatedRequest, res: Response) =
       where: { id }
     });
 
-    res.status(204).send();
+    return res.status(204).send();
   } catch (error) {
     console.error('Delete incident error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

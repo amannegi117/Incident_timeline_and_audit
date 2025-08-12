@@ -131,7 +131,20 @@ export interface JWTPayload {
   exp: number;
 }
 
-// Request with user context
+// Extend Express Request interface
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email: string;
+        role: UserRole;
+      };
+    }
+  }
+}
+
+// Request with user context (for backward compatibility)
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
