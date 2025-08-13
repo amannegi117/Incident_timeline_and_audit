@@ -11,6 +11,14 @@ export type Incident = {
   updatedAt: string
 }
 
+export type ShareLinkResponse = {
+  id: string
+  token: string
+  url: string
+  expiresAt: string
+  createdAt: string
+}
+
 export type IncidentListResponse = {
   data: Incident[]
   pagination: { page: number; limit: number; total: number; totalPages: number }
@@ -43,7 +51,7 @@ export async function reviewIncident(id: string, status: Incident['status'], com
 }
 
 export async function createShareLink(id: string, expiresAt: string, token?: string | null) {
-  return apiFetch(`/incidents/${id}/share`, { method: 'POST', body: JSON.stringify({ expiresAt }) }, token)
+  return apiFetch<ShareLinkResponse>(`/incidents/${id}/share`, { method: 'POST', body: JSON.stringify({ expiresAt }) }, token)
 }
 
 export async function fetchSharedIncident(tokenParam: string) {

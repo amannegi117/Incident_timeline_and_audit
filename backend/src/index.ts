@@ -8,7 +8,7 @@ import { prisma } from './lib/prisma';
 import authRoutes from './routes/auth';
 import incidentRoutes from './routes/incidents';
 import shareRoutes from './routes/share';
-import 'dotenv/config';
+// import 'dotenv/config';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
