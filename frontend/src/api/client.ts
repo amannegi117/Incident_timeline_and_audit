@@ -13,6 +13,15 @@ export async function apiFetch<T>(
   })
 
   if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      // Auto-logout on auth errors
+      try { localStorage.removeItem('auth') } catch {}
+      // Optional: redirect to login
+      if (typeof window !== 'undefined') {
+        const current = window.location.pathname + window.location.search
+        window.location.replace(`/login?from=${encodeURIComponent(current)}`)
+      }
+    }
     const errText = await res.text().catch(() => '')
     throw new Error(errText || `Request failed with status ${res.status}`)
   }
