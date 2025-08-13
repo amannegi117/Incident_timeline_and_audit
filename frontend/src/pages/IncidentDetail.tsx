@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse } from '../api/incidents'
-import { useParams } from 'react-router-dom'
+import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse, deleteIncident as deleteIncidentApi } from '../api/incidents'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
 import dayjs from 'dayjs'
@@ -9,6 +9,7 @@ import { useToast } from '../components/Toast'
 
 export default function IncidentDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { token, user } = useAuth()
   const qc = useQueryClient()
   const [comment, setComment] = useState('')
@@ -41,6 +42,15 @@ export default function IncidentDetail() {
     onSuccess: () => show('Share link created'),
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteIncidentApi(id!, token),
+    onSuccess: () => {
+      show('Incident deleted')
+      qc.invalidateQueries({ queryKey: ['incidents'] })
+      navigate('/incidents')
+    }
+  })
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div style={{ color: 'crimson' }}>{(error as any).message}</div>
   if (!incident) return null
@@ -51,7 +61,12 @@ export default function IncidentDetail() {
   return (
     <div>
       {node}
-      <h2>{incident.title}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>{incident.title}</h2>
+        {user?.role === 'ADMIN' && (
+          <button className="primary" onClick={() => { if (confirm('Delete this incident?')) deleteMutation.mutate() }}>Delete</button>
+        )}
+      </div>
       <div className="card">
         <div>
           <span className="badge">{incident.severity}</span>

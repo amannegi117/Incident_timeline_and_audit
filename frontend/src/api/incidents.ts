@@ -58,4 +58,8 @@ export async function fetchSharedIncident(tokenParam: string) {
   return apiFetch<Incident>(`/share/${tokenParam}`)
 }
 
+export async function deleteIncident(id: string, token?: string | null) {
+  return apiFetch(`/incidents/${id}`, { method: 'DELETE' }, token)
+}
+
 
