@@ -58,8 +58,19 @@ export async function createShareLink(id: string, expiresAt: string, token?: str
   return apiFetch<ShareLinkResponse>(`/incidents/${id}/share`, { method: 'POST', body: JSON.stringify({ expiresAt }) }, token)
 }
 
-export async function revokeShareLink(id: string, shareToken: string, token?: string | null) {
-  return apiFetch<void>(`/incidents/${id}/share/${shareToken}`, { method: 'DELETE' }, token)
+export async function revokeShareLink(id: string, tokenOrUrl: string, authToken?: string | null) {
+  let token = (tokenOrUrl || '').trim()
+  try {
+    if (token.startsWith('http')) {
+      const u = new URL(token)
+      const parts = u.pathname.split('/').filter(Boolean)
+      token = parts[parts.length - 1] || token
+    } else if (token.includes('/')) {
+      const parts = token.split('/').filter(Boolean)
+      token = parts[parts.length - 1]
+    }
+  } catch {}
+  return apiFetch<void>(`/incidents/${id}/share/${token}`, { method: 'DELETE' }, authToken)
 }
 
 export async function fetchSharedIncident(tokenParam: string) {
