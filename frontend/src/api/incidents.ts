@@ -42,6 +42,10 @@ export async function createIncident(data: { title: string; severity: Incident['
   return apiFetch<Incident>(`/incidents`, { method: 'POST', body: JSON.stringify(data) }, token)
 }
 
+export async function updateIncident(id: string, data: Partial<Incident> & { createdAt?: string }, token?: string | null) {
+  return apiFetch<Incident>(`/incidents/${id}`, { method: 'PUT', body: JSON.stringify(data) }, token)
+}
+
 export async function addTimeline(id: string, content: string, token?: string | null) {
   return apiFetch(`/incidents/${id}/timeline`, { method: 'POST', body: JSON.stringify({ content }) }, token)
 }

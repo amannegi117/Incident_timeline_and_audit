@@ -203,7 +203,7 @@ export const createIncident = async (req: Request, res: Response) => {
 export const updateIncident = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData: UpdateIncidentRequest = req.body;
+    const updateData: UpdateIncidentRequest & { createdBy?: string; createdAt?: string | Date } = req.body;
 
     // Check if incident exists
     const existingIncident = await prisma.incident.findUnique({
@@ -224,19 +224,35 @@ export const updateIncident = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Cannot edit incident that is not in OPEN status' });
     }
 
+    // Build safe update shape
+    const data: any = {};
+    if (typeof updateData.title === 'string') data.title = updateData.title;
+    if (typeof updateData.severity === 'string') data.severity = updateData.severity;
+    if (Array.isArray(updateData.tags)) data.tags = updateData.tags;
+
+    if (typeof updateData.createdBy === 'string') {
+      // Validate new creator exists
+      const user = await prisma.user.findUnique({ where: { id: updateData.createdBy } });
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid createdBy: user not found' });
+      }
+      data.createdBy = updateData.createdBy;
+    }
+
+    if (updateData.createdAt) {
+      const newCreatedAt = new Date(updateData.createdAt as any);
+      if (isNaN(newCreatedAt.getTime())) {
+        return res.status(400).json({ error: 'Invalid createdAt date' });
+      }
+      data.createdAt = newCreatedAt;
+    }
+
     const incident = await prisma.incident.update({
       where: { id },
-      data: updateData,
+      data,
       include: {
-        creator: {
-          select: { id: true, email: true }
-        },
-        _count: {
-          select: {
-            timelineEvents: true,
-            reviews: true
-          }
-        }
+        creator: { select: { id: true, email: true } },
+        _count: { select: { timelineEvents: true, reviews: true } }
       }
     });
 

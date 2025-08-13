@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse } from '../api/incidents'
+import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse, updateIncident } from '../api/incidents'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import { marked } from 'marked'
 import {useToast} from '../components/Toast'
@@ -41,6 +41,23 @@ export default function IncidentDetail() {
     onSuccess: () => show('Share link created'),
   })
 
+  const updateMutation = useMutation({
+    mutationFn: (payload: { createdBy?: string; createdAt?: string }) => updateIncident(id!, payload, token),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['incident', id] })
+      show('Incident updated')
+    },
+  })
+
+  const [createdByInput, setCreatedByInput] = useState('')
+  const [createdAtInput, setCreatedAtInput] = useState('')
+  useEffect(() => {
+    if (incident) {
+      setCreatedByInput(incident.createdBy)
+      setCreatedAtInput(dayjs(incident.createdAt).format('YYYY-MM-DDTHH:mm'))
+    }
+  }, [incident?.id, incident?.createdBy, incident?.createdAt])
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div style={{ color: 'crimson' }}>{(error as any).message}</div>
   if (!incident) return null
@@ -67,6 +84,36 @@ export default function IncidentDetail() {
           Created: {dayjs(incident.createdAt).format('YYYY-MM-DD HH:mm')}
         </div>
       </div>
+
+      {(user?.role === 'REPORTER' && incident.status === 'OPEN' && incident.createdBy === user?.id) && (
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault()
+            const payload: { createdBy?: string; createdAt?: string } = {}
+            if (createdByInput && createdByInput !== incident.createdBy) payload.createdBy = createdByInput
+            if (createdAtInput) payload.createdAt = new Date(createdAtInput).toISOString()
+            if (!payload.createdBy && !payload.createdAt) return
+            updateMutation.mutate(payload)
+          }}
+        >
+          <h3>Edit Incident Metadata</h3>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div>
+              <label>Created By (User ID)</label>
+              <input value={createdByInput} onChange={(e) => setCreatedByInput(e.target.value)} placeholder="user id" />
+              <div className="small-muted">Warning: changing ownership may immediately revoke your access.</div>
+            </div>
+            <div>
+              <label>Created At</label>
+              <input type="datetime-local" value={createdAtInput} onChange={(e) => setCreatedAtInput(e.target.value)} />
+            </div>
+            <div>
+              <button className="primary" type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? 'Saving...' : 'Save Changes'}</button>
+            </div>
+          </div>
+        </form>
+      )}
 
       {/* Timeline */}
       <h3>Timeline</h3>
