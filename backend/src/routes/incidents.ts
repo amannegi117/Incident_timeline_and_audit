@@ -11,6 +11,7 @@ import { reviewIncident } from '../controllers/reviewController';
 import { createShareLink } from '../controllers/shareController';
 import { authenticateToken, requireReporter, requireReviewer, requireAdmin } from '../middleware/auth';
 import { writeRateLimit, shareLinkRateLimit } from '../middleware/rateLimit';
+import { revokeShareLink } from '../controllers/shareController';
 
 const router = Router();
 
@@ -40,5 +41,8 @@ router.post('/:id/review', requireReviewer, writeRateLimit, reviewIncident);
 
 // POST /incidents/:id/share - Create share link (Admin only)
 router.post('/:id/share', requireAdmin, shareLinkRateLimit, createShareLink);
+
+// DELETE /incidents/:id/share/:token - Revoke expired share link (Admin only)
+router.delete('/:id/share/:token', requireAdmin, shareLinkRateLimit, revokeShareLink);
 
 export default router;
