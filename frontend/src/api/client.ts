@@ -12,10 +12,17 @@ export async function apiFetch<T>(
     },
   })
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '')
-    throw new Error(errText || `Request failed with status ${res.status}`)
+if (!res.ok) {
+  if (res.status === 401 || res.status === 403) {
+    try { localStorage.removeItem('auth') } catch {}
+    if (typeof window !== 'undefined') {
+      const current = window.location.pathname + window.location.search
+      window.location.replace(`/login?from=${encodeURIComponent(current)}`)
+    }
   }
+  const errText = await res.text().catch(() => '')
+  throw new Error(errText || `Request failed with status ${res.status}`)
+}
 
   const contentType = res.headers.get('content-type')
   if (contentType && contentType.includes('application/json')) {
