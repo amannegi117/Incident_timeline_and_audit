@@ -31,3 +31,9 @@
 - **Access**: Public read-only endpoint resolves by `token`, includes incident with timeline and reviews, and returns `410 Gone` after expiry.
 - **URL**: Frontend link built as `${FRONTEND_URL}/share/<token>`; frontend consumes at `/share/:token`.
 - **Abuse controls**: Share-link creation is rate-limited; tokens are unguessable and time-bound.
+
+## setup:
+- Install Docker desktop
+- **Run on your terminal**: docker compose up --build
+- This will start your db, backendand frontend servers
+

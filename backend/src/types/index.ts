@@ -32,6 +32,8 @@ export interface UpdateIncidentRequest {
   title?: string;
   severity?: IncidentSeverity;
   tags?: string[];
+  createdBy?: string;
+  createdAt?: Date;
 }
 
 export interface IncidentResponse {
