@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse, updateIncident } from '../api/incidents'
+import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse, updateIncident, revokeShareLink } from '../api/incidents'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useState, useEffect } from 'react'
@@ -49,8 +49,14 @@ export default function IncidentDetail() {
     },
   })
 
+  const revokeMutation = useMutation({
+    mutationFn: (shareToken: string) => revokeShareLink(id!, shareToken, token),
+    onSuccess: () => show('Share link revoked'),
+  })
+
   const [createdByInput, setCreatedByInput] = useState('')
   const [createdAtInput, setCreatedAtInput] = useState('')
+  const [revokeToken, setRevokeToken] = useState('')
   useEffect(() => {
     if (incident) {
       setCreatedByInput(incident.createdBy)
@@ -150,6 +156,26 @@ export default function IncidentDetail() {
               <div><strong>Expires:</strong> {dayjs(shareMutation.data.expiresAt).format('YYYY-MM-DD HH:mm')}</div>
             </div>
           ): null}
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (!revokeToken.trim()) return
+              revokeMutation.mutate(revokeToken.trim())
+              setRevokeToken('')
+            }}
+            style={{ marginTop: 12 }}
+          >
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div>
+                <label>Revoke Expired Share Link (Token)</label>
+                <input value={revokeToken} onChange={(e) => setRevokeToken(e.target.value)} placeholder="paste token" />
+              </div>
+              <div>
+                <button className="primary" type="submit" disabled={revokeMutation.isPending}>{revokeMutation.isPending ? 'Revoking...' : 'Revoke'}</button>
+              </div>
+            </div>
+          </form>
         </div>
       )}
     </div>
