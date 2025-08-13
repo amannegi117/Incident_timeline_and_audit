@@ -16,6 +16,14 @@ export type IncidentListResponse = {
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
+export type ShareLinkResponse = {
+  id: string
+  token: string
+  url: string
+  expiresAt: string
+  createdAt: string
+}
+
 export async function fetchIncidents(params: Record<string, any>, token?: string | null) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([k, v]) => {
@@ -43,7 +51,7 @@ export async function reviewIncident(id: string, status: Incident['status'], com
 }
 
 export async function createShareLink(id: string, expiresAt: string, token?: string | null) {
-  return apiFetch(`/incidents/${id}/share`, { method: 'POST', body: JSON.stringify({ expiresAt }) }, token)
+  return apiFetch<ShareLinkResponse>(`/incidents/${id}/share`, { method: 'POST', body: JSON.stringify({ expiresAt }) }, token)
 }
 
 export async function fetchSharedIncident(tokenParam: string) {
