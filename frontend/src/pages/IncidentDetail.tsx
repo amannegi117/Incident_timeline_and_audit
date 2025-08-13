@@ -5,12 +5,14 @@ import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
 import dayjs from 'dayjs'
 import { marked } from 'marked'
+import { useToast } from '../components/Toast'
 
 export default function IncidentDetail() {
   const { id } = useParams()
   const { token, user } = useAuth()
   const qc = useQueryClient()
   const [comment, setComment] = useState('')
+  const { show, node } = useToast()
 
   const { data: incident, isLoading, error } = useQuery({
     queryKey: ['incident', id],
@@ -26,19 +28,29 @@ export default function IncidentDetail() {
   const reviewMutation = useMutation({
     mutationFn: (payload: { status: 'IN_REVIEW' | 'APPROVED' | 'REJECTED'; comment?: string }) =>
       reviewIncident(id!, payload.status as any, payload.comment, token),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['incident', id] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['incident', id] })
+      if (vars.status === 'IN_REVIEW') show('Incident moved to In Review')
+      if (vars.status === 'APPROVED') show('Incident approved')
+      if (vars.status === 'REJECTED') show('Incident rejected')
+    },
   })
 
   const shareMutation = useMutation<ShareLinkResponse, Error, string>({
     mutationFn: (expiresAt) => createShareLink(id!, expiresAt, token),
+    onSuccess: () => show('Share link created'),
   })
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div style={{ color: 'crimson' }}>{(error as any).message}</div>
   if (!incident) return null
 
+  const canMoveToReview = (user?.role === 'REVIEWER' || user?.role === 'ADMIN') && incident.status === 'OPEN'
+  const canApproveReject = (user?.role === 'REVIEWER' || user?.role === 'ADMIN') && incident.status === 'IN_REVIEW'
+
   return (
     <div>
+      {node}
       <h2>{incident.title}</h2>
       <div className="card">
         <div>
@@ -58,17 +70,22 @@ export default function IncidentDetail() {
       {/* Timeline */}
       <h3>Timeline</h3>
       <TimelineForm canAdd={user?.role === 'REPORTER'} onAdd={(c) => addTimelineMutation.mutate(c)} loading={addTimelineMutation.isPending} />
-      {/* Placeholder: Backend returns timeline in incident detail include; if not, this can be extended. */}
 
       {/* Review */}
       {(user?.role === 'REVIEWER' || user?.role === 'ADMIN') && (
         <div className="card">
           <h3>Review</h3>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button className="primary" onClick={() => reviewMutation.mutate({ status: 'IN_REVIEW' })}>Move to In Review</button>
-            <button className="primary" onClick={() => reviewMutation.mutate({ status: 'APPROVED', comment })}>Approve</button>
-            <button className="primary" onClick={() => reviewMutation.mutate({ status: 'REJECTED', comment })}>Reject</button>
-            <input placeholder="Comment (optional)" value={comment} onChange={(e) => setComment(e.target.value)} />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            {canMoveToReview && (
+              <button className="primary" onClick={() => reviewMutation.mutate({ status: 'IN_REVIEW' })}>Move to In Review</button>
+            )}
+            {canApproveReject && (
+              <>
+                <button className="primary" onClick={() => reviewMutation.mutate({ status: 'APPROVED', comment })}>Approve</button>
+                <button className="primary" onClick={() => reviewMutation.mutate({ status: 'REJECTED', comment })}>Reject</button>
+                <input placeholder="Comment (optional)" value={comment} onChange={(e) => setComment(e.target.value)} />
+              </>
+            )}
           </div>
         </div>
       )}
