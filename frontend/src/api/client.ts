@@ -11,7 +11,7 @@ export async function apiFetch<T>(
   options: RequestInit = {},
   token?: string | null
 ): Promise<T> {
-  const res = await fetch(`${getBaseUrl()}${path}`, {
+  const res = await fetch(path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

@@ -11,12 +11,15 @@ export const getIncidents = async (req: Request, res: Response) => {
       tags,
       dateFrom,
       dateTo,
-      page = 1,
-      limit = 10
-    } = req.query as IncidentFilters;
+      page,
+      limit
+    } = req.query as Partial<IncidentFilters> & Record<string, any>;
 
-    const skip = (page - 1) * limit;
-    const take = limit;
+    const pageNum = Math.max(parseInt(String(page ?? '1'), 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(String(limit ?? '10'), 10) || 10, 1), 100);
+
+    const skip = (pageNum - 1) * limitNum;
+    const take = limitNum;
 
     // Build where clause for search and filters
     const where: any = {};
@@ -24,12 +27,12 @@ export const getIncidents = async (req: Request, res: Response) => {
     // Search across title, tags, and timeline content
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { tags: { hasSome: [search] } },
+        { title: { contains: String(search), mode: 'insensitive' } },
+        { tags: { hasSome: [String(search)] } },
         {
           timelineEvents: {
             some: {
-              content: { contains: search, mode: 'insensitive' }
+              content: { contains: String(search), mode: 'insensitive' }
             }
           }
         }
@@ -38,24 +41,30 @@ export const getIncidents = async (req: Request, res: Response) => {
 
     // Filter by severity
     if (severity) {
-      where.severity = severity;
+      where.severity = String(severity);
     }
 
     // Filter by status
     if (status) {
-      where.status = status;
+      where.status = String(status);
     }
 
     // Filter by tags
-    if (tags && tags.length > 0) {
-      where.tags = { hasSome: tags };
+    const tagsArray = Array.isArray(tags)
+      ? (tags as string[]).map(String)
+      : typeof tags === 'string' && tags.length > 0
+        ? [tags]
+        : undefined;
+
+    if (tagsArray && tagsArray.length > 0) {
+      where.tags = { hasSome: tagsArray };
     }
 
     // Filter by date range
     if (dateFrom || dateTo) {
       where.createdAt = {};
-      if (dateFrom) where.createdAt.gte = new Date(dateFrom);
-      if (dateTo) where.createdAt.lte = new Date(dateTo);
+      if (dateFrom) where.createdAt.gte = new Date(String(dateFrom));
+      if (dateTo) where.createdAt.lte = new Date(String(dateTo));
     }
 
     // Role-based filtering: Reporters can only see their own incidents
@@ -85,13 +94,13 @@ export const getIncidents = async (req: Request, res: Response) => {
       prisma.incident.count({ where })
     ]);
 
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limitNum);
 
     const response: PaginatedResponse<IncidentResponse> = {
       data: incidents as IncidentResponse[],
       pagination: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
         totalPages
       }
