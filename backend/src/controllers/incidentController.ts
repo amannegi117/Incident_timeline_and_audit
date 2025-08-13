@@ -8,6 +8,7 @@ export const getIncidents = async (req: Request, res: Response) => {
       search,
       severity,
       status,
+      // @ts-expect-error express query can be string | string[]
       tags,
       dateFrom,
       dateTo,
@@ -49,13 +50,14 @@ export const getIncidents = async (req: Request, res: Response) => {
       where.status = String(status);
     }
 
-    // Filter by tags
-    const tagsArray = Array.isArray(tags)
-      ? (tags as string[]).map(String)
-      : typeof tags === 'string' && tags.length > 0
-        ? [tags]
-        : undefined;
-
+    // Filter by tags (robust parsing from query)
+    const rawTags = (req.query as Record<string, unknown>).tags;
+    let tagsArray: string[] | undefined;
+    if (Array.isArray(rawTags)) {
+      tagsArray = rawTags.map((t) => String(t)).filter((t) => t.trim().length > 0);
+    } else if (typeof rawTags === 'string' && rawTags.trim().length > 0) {
+      tagsArray = [rawTags];
+    }
     if (tagsArray && tagsArray.length > 0) {
       where.tags = { hasSome: tagsArray };
     }
