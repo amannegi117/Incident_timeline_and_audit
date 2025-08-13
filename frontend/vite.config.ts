@@ -5,8 +5,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    host: true
-  }
+    host: true,
+    proxy: {
+      '/auth': { target: 'http://backend:3001', changeOrigin: true },
+      '/incidents': { target: 'http://backend:3001', changeOrigin: true },
+      '/share': { target: 'http://backend:3001', changeOrigin: true },
+      '/health': { target: 'http://backend:3001', changeOrigin: true },
+    },
+  },
 })
 
 
