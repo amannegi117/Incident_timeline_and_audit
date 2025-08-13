@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addTimeline, createShareLink, fetchIncident, reviewIncident } from '../api/incidents'
+import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse } from '../api/incidents'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
@@ -29,8 +29,8 @@ export default function IncidentDetail() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['incident', id] }),
   })
 
-  const shareMutation = useMutation({
-    mutationFn: (expiresAt: string) => createShareLink(id!, expiresAt, token),
+  const shareMutation = useMutation<ShareLinkResponse, Error, string>({
+    mutationFn: (expiresAt) => createShareLink(id!, expiresAt, token),
   })
 
   if (isLoading) return <div>Loading...</div>
@@ -78,12 +78,12 @@ export default function IncidentDetail() {
         <div className="card">
           <h3>Create Share Link</h3>
           <ShareForm onCreate={(iso) => shareMutation.mutate(iso)} />
-          {shareMutation.data && (
+          {shareMutation.data ? (
             <div style={{ marginTop: 8 }}>
               <div><strong>URL:</strong> <a href={shareMutation.data.url} target="_blank" rel="noreferrer">{shareMutation.data.url}</a></div>
               <div><strong>Expires:</strong> {dayjs(shareMutation.data.expiresAt).format('YYYY-MM-DD HH:mm')}</div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
