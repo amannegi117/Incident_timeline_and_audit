@@ -4,10 +4,12 @@ import { createIncident, fetchIncidents, Incident } from '../api/incidents'
 import { useAuth } from '../hooks/useAuth'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
+import {useToast} from '../components/Toast'
 
 export default function IncidentsList() {
   const { token, user } = useAuth()
   const qc = useQueryClient()
+  const {show, node} = useToast()
 
   const [search, setSearch] = useState('')
   const [severity, setSeverity] = useState('')
@@ -34,12 +36,16 @@ export default function IncidentsList() {
 
   const createMutation = useMutation({
     mutationFn: (payload: { title: string; severity: Incident['severity']; tags: string[] }) =>
-      createIncident(payload, token),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['incidents'] }),
+    createIncident(payload, token),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['incidents'] })
+      show('Incident created')
+    },
   })
 
   return (
     <div>
+      {node}
       <h2>Incidents</h2>
 
       <div className="filters card">
