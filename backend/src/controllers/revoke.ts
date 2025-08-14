@@ -14,11 +14,8 @@ export const revokeShareLink = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Share link not found' });
     }
 
-    if (shareLink.expiresAt >= new Date()) {
-      return res.status(400).json({ error: 'Share link is not expired and cannot be revoked by this endpoint' });
-    }
-
-    await prisma.shareLink.delete({ where: { token } });
+    const a = await prisma.shareLink.delete({ where: { token } });
+    console.log("just checking", a);
     return res.status(204).send();
   } catch (error) {
     console.error('Revoke share link error:', error);
