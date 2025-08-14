@@ -9,6 +9,7 @@ import {
 import { addTimelineEvent } from '../controllers/timelineController';
 import { reviewIncident } from '../controllers/reviewController';
 import { createShareLink } from '../controllers/shareController';
+import { revokeShareLink } from '../controllers/shareController';
 import { authenticateToken, requireReporter, requireReviewer, requireAdmin } from '../middleware/auth';
 import { writeRateLimit, shareLinkRateLimit } from '../middleware/rateLimit';
 
@@ -40,5 +41,8 @@ router.post('/:id/review', requireReviewer, writeRateLimit, reviewIncident);
 
 // POST /incidents/:id/share - Create share link (Admin only)
 router.post('/:id/share', requireAdmin, shareLinkRateLimit, createShareLink);
+
+// POST /incidents/:id/share/:token/revoke - Revoke share link (Admin only)
+router.post('/:id/share/:token/revoke', requireAdmin, shareLinkRateLimit, revokeShareLink);
 
 export default router;

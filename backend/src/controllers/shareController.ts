@@ -69,31 +69,10 @@ export const getSharedIncident = async (req: Request, res: Response) => {
       include: {
         incident: {
           include: {
-            creator: {
-              select: { id: true, email: true }
-            },
-            timelineEvents: {
-              include: {
-                creator: {
-                  select: { id: true, email: true }
-                }
-              },
-              orderBy: { createdAt: 'asc' }
-            },
-            reviews: {
-              include: {
-                reviewer: {
-                  select: { id: true, email: true }
-                }
-              },
-              orderBy: { reviewedAt: 'desc' }
-            },
-            _count: {
-              select: {
-                timelineEvents: true,
-                reviews: true
-              }
-            }
+            creator: { select: { id: true, email: true } },
+            timelineEvents: { include: { creator: { select: { id: true, email: true } } }, orderBy: { createdAt: 'asc' } },
+            reviews: { include: { reviewer: { select: { id: true, email: true } } }, orderBy: { reviewedAt: 'desc' } },
+            _count: { select: { timelineEvents: true, reviews: true } }
           }
         }
       }
@@ -118,6 +97,30 @@ export const getSharedIncident = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Get shared incident error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const revokeShareLink = async (req: Request, res: Response) => {
+  try {
+    const { id: incidentId, token } = req.params as { id: string; token: string };
+
+    // Only admins can revoke share links
+    if (req.user?.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Only admins can revoke share links' });
+    }
+
+    const link = await prisma.shareLink.findUnique({ where: { token } });
+    if (!link || link.incidentId !== incidentId) {
+      return res.status(404).json({ error: 'Share link not found' });
+    }
+
+    // Expire immediately
+    await prisma.shareLink.update({ where: { token }, data: { expiresAt: new Date() } });
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Revoke share link error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
