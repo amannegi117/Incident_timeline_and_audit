@@ -74,14 +74,37 @@ const [revokeToken, setRevokeToken] = useState('')
   const canMoveToReview = (user?.role === 'REVIEWER' || user?.role === 'ADMIN') && incident.status === 'OPEN'
   const canApproveReject = (user?.role === 'REVIEWER' || user?.role === 'ADMIN') && incident.status === 'IN_REVIEW'
 
+  async function downloadPdf() {
+    try {
+      const res = await fetch(`/incidents/${id}/postmortem.pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) throw new Error('Failed to download PDF')
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `incident-${id}-postmortem.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (e) {
+      show('Failed to export PDF')
+    }
+  }
+
   return (
     <div>
       {node}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>{incident.title}</h2>
-        {user?.role === 'ADMIN' && (
-          <button className="primary" onClick={() => { if (confirm('Delete this incident?')) deleteMutation.mutate() }}>Delete</button>
-        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="primary" onClick={downloadPdf}>Export PDF</button>
+          {user?.role === 'ADMIN' && (
+            <button className="primary" onClick={() => { if (confirm('Delete this incident?')) deleteMutation.mutate() }}>Delete</button>
+          )}
+        </div>
       </div>
       <div className="card">
         <div>
@@ -219,20 +242,24 @@ function ShareForm({ onCreate }: { onCreate: (iso: string) => void }) {
   const [expires, setExpires] = useState<string>('')
   return (
     <form
+      className="card"
       onSubmit={(e) => {
         e.preventDefault()
         if (!expires) return
-        const iso = new Date(expires).toISOString()
-        onCreate(iso)
+        try {
+          const d = new Date(expires)
+          onCreate(d.toISOString())
+          setExpires('')
+        } catch {}
       }}
     >
-      <div style={{ display: 'flex', gap: 8, alignItems: 'end' }}>
-        <div style={{ flex: 1 }}>
-          <label>Expires At</label>
-          <input type="datetime-local" value={expires} onChange={(e) => setExpires(e.target.value)} />
-        </div>
-        <button className="primary" type="submit">Create</button>
-      </div>
+      <label>Expiration (Local Time)</label>
+      <input
+        type="datetime-local"
+        value={expires}
+        onChange={(e) => setExpires(e.target.value)}
+      />
+      <button className="primary" type="submit">Create</button>
     </form>
   )
 }

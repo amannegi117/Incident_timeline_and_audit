@@ -7,7 +7,7 @@ function formatDate(date: Date | string) {
   return d.toISOString().replace('T', ' ').replace('Z', ' UTC');
 }
 
-export const exportIncidentPostmortemPdf = async (req: Request, res: Response) => {
+export const exportIncidentPostmortemPdf = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -28,11 +28,13 @@ export const exportIncidentPostmortemPdf = async (req: Request, res: Response) =
     });
 
     if (!incident) {
-      return res.status(404).json({ error: 'Incident not found' });
+      res.status(404).json({ error: 'Incident not found' });
+      return;
     }
 
     if (req.user?.role === 'REPORTER' && incident.createdBy !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
+      res.status(403).json({ error: 'Access denied' });
+      return;
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -115,8 +117,10 @@ export const exportIncidentPostmortemPdf = async (req: Request, res: Response) =
     doc.text(`Reviews: ${incident._count.reviews}`);
 
     doc.end();
+    return;
   } catch (error) {
     console.error('Export postmortem PDF error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
+    return;
   }
 };
