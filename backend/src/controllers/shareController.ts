@@ -105,7 +105,6 @@ export const revokeShareLink = async (req: Request, res: Response) => {
   try {
     const { id: incidentId, token } = req.params as { id: string; token: string };
 
-    // Only admins can revoke share links
     if (req.user?.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can revoke share links' });
     }
@@ -115,8 +114,11 @@ export const revokeShareLink = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Share link not found' });
     }
 
-    // Expire immediately
-    await prisma.shareLink.update({ where: { token }, data: { expiresAt: new Date() } });
+    // Expire then delete in a single transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.shareLink.update({ where: { token }, data: { expiresAt: new Date() } });
+      await tx.shareLink.delete({ where: { token } });
+    });
 
     return res.status(204).send();
   } catch (error) {
@@ -129,7 +131,6 @@ export const revokeShareLinkByToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.params as { token: string };
 
-    // Only admins can revoke share links
     if (req.user?.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can revoke share links' });
     }
@@ -139,7 +140,10 @@ export const revokeShareLinkByToken = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Share link not found' });
     }
 
-    await prisma.shareLink.update({ where: { token }, data: { expiresAt: new Date() } });
+    await prisma.$transaction(async (tx) => {
+      await tx.shareLink.update({ where: { token }, data: { expiresAt: new Date() } });
+      await tx.shareLink.delete({ where: { token } });
+    });
 
     return res.status(204).send();
   } catch (error) {
