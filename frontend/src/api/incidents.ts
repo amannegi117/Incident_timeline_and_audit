@@ -54,12 +54,13 @@ export async function createShareLink(id: string, expiresAt: string, token?: str
   return apiFetch<ShareLinkResponse>(`/incidents/${id}/share`, { method: 'POST', body: JSON.stringify({ expiresAt }) }, token)
 }
 
-export async function revokeShareLink(id: string, tokenParam: string, token?: string | null) {
-  return apiFetch(`/incidents/${id}/share/${tokenParam}/revoke`, { method: 'POST' }, token)
+export async function revokeShareLink(_id: string, tokenParam: string, token?: string | null) {
+  // Route moved under /share
+  return apiFetch(`/share/${tokenParam}/revoke`, { method: 'POST' }, token)
 }
 
 export async function revokeShareLinkByToken(tokenParam: string, token?: string | null) {
-  return apiFetch(`/incidents/share/${tokenParam}/revoke`, { method: 'POST' }, token)
+  return apiFetch(`/share/${tokenParam}/revoke`, { method: 'POST' }, token)
 }
 
 export async function fetchSharedIncident(tokenParam: string) {
