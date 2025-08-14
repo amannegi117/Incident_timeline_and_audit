@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log(' Starting database seed...');
 
   // Create users
   const hashedPassword = await bcrypt.hash('password123', 12);
@@ -39,7 +39,7 @@ async function main() {
     }),
   ]);
 
-  console.log('✅ Users created:', users.map(u => ({ email: u.email, role: u.role })));
+  console.log(' Users created:', users.map(u => ({ email: u.email, role: u.role })));
 
   // Create sample incidents
   const incidents = await Promise.all([
@@ -72,7 +72,7 @@ async function main() {
     }),
   ]);
 
-  console.log('✅ Incidents created:', incidents.map(i => ({ title: i.title, status: i.status })));
+  console.log(' Incidents created:', incidents.map(i => ({ title: i.title, status: i.status })));
 
   // Add timeline events
   const timelineEvents = await Promise.all([
@@ -106,7 +106,7 @@ async function main() {
     }),
   ]);
 
-  console.log('✅ Timeline events created:', timelineEvents.length);
+  console.log(' Timeline events created:', timelineEvents.length);
 
   // Add reviews
   const reviews = await Promise.all([
@@ -128,9 +128,9 @@ async function main() {
     }),
   ]);
 
-  console.log('✅ Reviews created:', reviews.length);
+  console.log(' Reviews created:', reviews.length);
 
-  console.log('🎉 Database seeding completed successfully!');
+  console.log(' Database seeding completed successfully!');
   console.log('\n📋 Sample login credentials:');
   console.log('Admin: admin@example.com / password123');
   console.log('Reviewer: reviewer@example.com / password123');

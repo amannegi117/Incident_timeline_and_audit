@@ -13,15 +13,27 @@ export async function apiFetch<T>(
   })
 
 if (!res.ok) {
-  if (res.status === 401 || res.status === 403) {
-    try { localStorage.removeItem('auth') } catch {}
-    if (typeof window !== 'undefined') {
-      const current = window.location.pathname + window.location.search
-      window.location.replace(`/login?from=${encodeURIComponent(current)}`)
+ if (res.status === 401 || res.status === 403) {
+      try { localStorage.removeItem('auth') } catch {}
+      if (typeof window !== 'undefined') {
+        const current = window.location.pathname + window.location.search
+        window.location.replace(`/login?from=${encodeURIComponent(current)}`)
+      }
+      // Throw an empty error to avoid flashing error text while redirecting
+      throw new Error('')
     }
-  }
-  const errText = await res.text().catch(() => '')
-  throw new Error(errText || `Request failed with status ${res.status}`)
+
+    let message = ''
+    try {
+      const data = await res.json()
+      message = (data && (data.error || data.message)) || ''
+    } catch {
+      console.log("Not a good response")
+    }
+    if (!message) {
+      message = await res.text().catch(() => '')
+    }
+    throw new Error(message || `Request failed with status ${res.status}`)
 }
 
   const contentType = res.headers.get('content-type')
@@ -31,5 +43,4 @@ if (!res.ok) {
   // @ts-expect-error allow empty
   return null
 }
-
 

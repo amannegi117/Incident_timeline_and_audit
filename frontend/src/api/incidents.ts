@@ -58,4 +58,25 @@ export async function fetchSharedIncident(tokenParam: string) {
   return apiFetch<Incident>(`/share/${tokenParam}`)
 }
 
+export async function updateIncident(id: string, data: Partial<Incident> & { createdAt?: string }, token?: string | null) {
+  return apiFetch<Incident>(`/incidents/${id}`, { method: 'PUT', body: JSON.stringify(data) }, token)
+}
 
+export async function deleteIncident(id: string, token?: string | null) {
+  return apiFetch(`/incidents/${id}`, { method: 'DELETE' }, token)
+}
+
+export async function revokeShareLink(id: string, tokenOrUrl: string, authToken?: string | null) {
+  let token = (tokenOrUrl || '').trim()
+  try {
+    if (token.startsWith('http')) {
+      const u = new URL(token)
+      const parts = u.pathname.split('/').filter(Boolean)
+      token = parts[parts.length - 1] || token
+    } else if (token.includes('/')) {
+      const parts = token.split('/').filter(Boolean)
+      token = parts[parts.length - 1]
+    }
+  } catch {}
+  return apiFetch<void>(`/share/${id}/share/${token}`, { method: 'DELETE' }, authToken)
+}

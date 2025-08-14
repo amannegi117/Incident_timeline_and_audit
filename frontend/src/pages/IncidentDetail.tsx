@@ -1,18 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addTimeline, createShareLink, fetchIncident, reviewIncident, type ShareLinkResponse } from '../api/incidents'
-import { useParams } from 'react-router-dom'
+import { addTimeline, createShareLink, fetchIncident, reviewIncident, revokeShareLink, type ShareLinkResponse, updateIncident,  deleteIncident as deleteIncidentApi } from '../api/incidents'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
 import dayjs from 'dayjs'
 import { marked } from 'marked'
-import {useToast} from '../components/Toast'
+import { useToast } from '../components/Toast'
 
 export default function IncidentDetail() {
   const { id } = useParams()
   const { token, user } = useAuth()
   const qc = useQueryClient()
   const [comment, setComment] = useState('')
-  const {show, node} = useToast()
+  const { show, node } = useToast()
+  const navigate = useNavigate()
+  const [createdByInput, setCreatedByInput] = useState('')
+  const [createdAtInput, setCreatedAtInput] = useState('')
 
   const { data: incident, isLoading, error } = useQuery({
     queryKey: ['incident', id],
@@ -28,7 +31,7 @@ export default function IncidentDetail() {
   const reviewMutation = useMutation({
     mutationFn: (payload: { status: 'IN_REVIEW' | 'APPROVED' | 'REJECTED'; comment?: string }) =>
       reviewIncident(id!, payload.status as any, payload.comment, token),
-      onSuccess: (_, vars) => {
+    onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['incident', id] })
       if (vars.status === 'IN_REVIEW') show('Incident moved to In Review')
       if (vars.status === 'APPROVED') show('Incident approved')
@@ -41,6 +44,29 @@ export default function IncidentDetail() {
     onSuccess: () => show('Share link created'),
   })
 
+    const deleteMutation = useMutation({
+    mutationFn: () => deleteIncidentApi(id!, token),
+    onSuccess: () => {
+      show('Incident deleted')
+      qc.invalidateQueries({ queryKey: ['incidents'] })
+      navigate('/incidents')
+    }
+  })
+const updateMutation = useMutation({
+  mutationFn: (payload: { createdBy?: string; createdAt?: string }) => updateIncident(id!, payload, token),
+  onSuccess: () => {
+    qc.invalidateQueries({ queryKey: ['incident', id] })
+    show('Incident updated')
+  },
+})
+
+const revokeMutation = useMutation({
+  mutationFn: (shareToken: string) => revokeShareLink(id!, shareToken, token),
+  onSuccess: () => show('Share link revoked'),
+})
+
+const [revokeToken, setRevokeToken] = useState('')
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div style={{ color: 'crimson' }}>{(error as any).message}</div>
   if (!incident) return null
@@ -48,11 +74,15 @@ export default function IncidentDetail() {
   const canMoveToReview = (user?.role === 'REVIEWER' || user?.role === 'ADMIN') && incident.status === 'OPEN'
   const canApproveReject = (user?.role === 'REVIEWER' || user?.role === 'ADMIN') && incident.status === 'IN_REVIEW'
 
-
   return (
     <div>
       {node}
-      <h2>{incident.title}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>{incident.title}</h2>
+        {user?.role === 'ADMIN' && (
+          <button className="primary" onClick={() => { if (confirm('Delete this incident?')) deleteMutation.mutate() }}>Delete</button>
+        )}
+      </div>
       <div className="card">
         <div>
           <span className="badge">{incident.severity}</span>
@@ -71,13 +101,12 @@ export default function IncidentDetail() {
       {/* Timeline */}
       <h3>Timeline</h3>
       <TimelineForm canAdd={user?.role === 'REPORTER'} onAdd={(c) => addTimelineMutation.mutate(c)} loading={addTimelineMutation.isPending} />
-      {/* Placeholder: Backend returns timeline in incident detail include; if not, this can be extended. */}
 
       {/* Review */}
       {(user?.role === 'REVIEWER' || user?.role === 'ADMIN') && (
         <div className="card">
           <h3>Review</h3>
-                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             {canMoveToReview && (
               <button className="primary" onClick={() => reviewMutation.mutate({ status: 'IN_REVIEW' })}>Move to In Review</button>
             )}
@@ -93,17 +122,70 @@ export default function IncidentDetail() {
       )}
 
       {/* Share Link */}
-      {user?.role === 'ADMIN' && (
-        <div className="card">
-          <h3>Create Share Link</h3>
-          <ShareForm onCreate={(iso) => shareMutation.mutate(iso)} />
-          {shareMutation.data?(
-            <div style={{ marginTop: 8 }}>
-              <div><strong>URL:</strong> <a href={shareMutation.data.url} target="_blank" rel="noreferrer">{shareMutation.data.url}</a></div>
-              <div><strong>Expires:</strong> {dayjs(shareMutation.data.expiresAt).format('YYYY-MM-DD HH:mm')}</div>
-            </div>
-          ): null}
+{user?.role === 'ADMIN' && (
+  <div className="card">
+    <h3>Create Share Link</h3>
+    <ShareForm onCreate={(iso) => shareMutation.mutate(iso)} />
+    {shareMutation.data ? (
+      <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
+        <div>
+          <strong>URL:</strong>{' '}
+          <a href={shareMutation.data.url} target="_blank" rel="noreferrer">
+            {shareMutation.data.url}
+          </a>
         </div>
+        <div>
+          <strong>Expires:</strong>{' '}
+          {dayjs(shareMutation.data.expiresAt).format('YYYY-MM-DD HH:mm')}
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            className="primary"
+            type="button"
+            onClick={() => revokeMutation.mutate(shareMutation.data.token)}
+          >
+            {revokeMutation.isPending ? 'Revoking...' : 'Revoke'}
+          </button>
+          {dayjs().isBefore(dayjs(shareMutation.data.expiresAt)) && (
+            <span className="small-muted">Link not expired yet</span>
+          )}
+        </div>
+      </div>
+    ) : null}
+  </div>
+)}
+
+      {/* Edit Incident Metadata */}
+      {(user?.role === 'REPORTER' && incident.status === 'OPEN' && incident.createdBy === user?.id) && (
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault()
+            const payload: { createdBy?: string; createdAt?: string } = {}
+            if (createdByInput && createdByInput !== incident.createdBy) payload.createdBy = createdByInput
+            if (createdAtInput) payload.createdAt = new Date(createdAtInput).toISOString()
+            if (!payload.createdBy && !payload.createdAt) return
+            updateMutation.mutate(payload)
+          }}
+        >
+          <h3>Edit Incident Metadata</h3>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div>
+              <label>Created By (User ID)</label>
+              <input value={createdByInput} onChange={(e) => setCreatedByInput(e.target.value)} placeholder="user id" />
+              <div className="small-muted">Warning: changing ownership may immediately revoke your access.</div>
+            </div>
+            <div>
+              <label>Created At</label>
+              <input type="datetime-local" value={createdAtInput} onChange={(e) => setCreatedAtInput(e.target.value)} />
+            </div>
+            <div>
+              <button className="primary" type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </form>
       )}
     </div>
   )
@@ -154,5 +236,3 @@ function ShareForm({ onCreate }: { onCreate: (iso: string) => void }) {
     </form>
   )
 }
-
-

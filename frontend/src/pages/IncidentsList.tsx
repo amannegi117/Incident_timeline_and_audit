@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { createIncident, fetchIncidents, Incident } from '../api/incidents'
+import { createIncident, fetchIncidents, Incident, deleteIncident as deleteIncidentApi } from '../api/incidents'
 import { useAuth } from '../hooks/useAuth'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
@@ -41,6 +41,14 @@ export default function IncidentsList() {
       qc.invalidateQueries({ queryKey: ['incidents'] })
       show('Incident created')
     },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteIncidentApi(id, token),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['incidents'] })
+      show('Incident deleted')
+    }
   })
 
   return (
@@ -87,7 +95,7 @@ export default function IncidentsList() {
       <div className="list">
         {data?.data.map((inc) => (
           <div key={inc.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <Link to={`/incidents/${inc.id}`}><strong>{inc.title}</strong></Link>
                 <div>
@@ -98,7 +106,14 @@ export default function IncidentsList() {
                   ))}
                 </div>
               </div>
-              <div>{dayjs(inc.createdAt).format('YYYY-MM-DD HH:mm')}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div>{dayjs(inc.createdAt).format('YYYY-MM-DD HH:mm')}</div>
+                {user?.role === 'ADMIN' && (
+                  <button className="primary" onClick={() => {
+                    if (confirm('Delete this incident?')) deleteMutation.mutate(inc.id)
+                  }}>Delete</button>
+                )}
+              </div>
             </div>
           </div>
         ))}
