@@ -11,6 +11,7 @@ import { reviewIncident } from '../controllers/reviewController';
 import { createShareLink } from '../controllers/shareController';
 import { authenticateToken, requireReporter, requireReviewer, requireAdmin } from '../middleware/auth';
 import { writeRateLimit, shareLinkRateLimit } from '../middleware/rateLimit';
+import { exportIncidentPostmortemPdf } from '../controllers/postmortemController';
 
 const router = Router();
 
@@ -22,6 +23,9 @@ router.get('/', getIncidents);
 
 // GET /incidents/:id - Get specific incident
 router.get('/:id', getIncident);
+
+// GET /incidents/:id/postmortem.pdf - Export incident postmortem as PDF
+router.get('/:id/postmortem.pdf', exportIncidentPostmortemPdf);
 
 // POST /incidents - Create new incident (Reporters and above)
 router.post('/', requireReporter, writeRateLimit, createIncident);
