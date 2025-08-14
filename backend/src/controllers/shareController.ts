@@ -124,3 +124,26 @@ export const revokeShareLink = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const revokeShareLinkByToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params as { token: string };
+
+    // Only admins can revoke share links
+    if (req.user?.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Only admins can revoke share links' });
+    }
+
+    const link = await prisma.shareLink.findUnique({ where: { token } });
+    if (!link) {
+      return res.status(404).json({ error: 'Share link not found' });
+    }
+
+    await prisma.shareLink.update({ where: { token }, data: { expiresAt: new Date() } });
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Revoke share link by token error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};

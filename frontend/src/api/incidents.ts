@@ -58,6 +58,10 @@ export async function revokeShareLink(id: string, tokenParam: string, token?: st
   return apiFetch(`/incidents/${id}/share/${tokenParam}/revoke`, { method: 'POST' }, token)
 }
 
+export async function revokeShareLinkByToken(tokenParam: string, token?: string | null) {
+  return apiFetch(`/incidents/share/${tokenParam}/revoke`, { method: 'POST' }, token)
+}
+
 export async function fetchSharedIncident(tokenParam: string) {
   return apiFetch<Incident>(`/share/${tokenParam}`)
 }
