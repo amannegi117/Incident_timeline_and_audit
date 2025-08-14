@@ -13,26 +13,29 @@ export async function apiFetch<T>(
   })
 
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
-      try { localStorage.removeItem('auth') } catch {}
-      if (typeof window !== 'undefined') {
-        const current = window.location.pathname + window.location.search
-        window.location.replace(`/login?from=${encodeURIComponent(current)}`)
-      }
-      // Throw an empty error to avoid flashing error text while redirecting
-      throw new Error('')
-    }
-
+    // Try to extract a meaningful error message first
     let message = ''
     try {
-      const data = await res.json()
+      const data = await res.clone().json()
       message = (data && (data.error || data.message)) || ''
     } catch {
       // ignore
     }
     if (!message) {
-      message = await res.text().catch(() => '')
+      try { message = await res.text() } catch {}
     }
+
+    // Auto-logout only for 401, or 403 specifically indicating invalid/expired token
+    const isAuthExpired = res.status === 401 || (res.status === 403 && /invalid|expired token/i.test(message))
+    if (isAuthExpired) {
+      try { localStorage.removeItem('auth') } catch {}
+      if (typeof window !== 'undefined') {
+        const current = window.location.pathname + window.location.search
+        window.location.replace(`/login?from=${encodeURIComponent(current)}`)
+      }
+      throw new Error('')
+    }
+
     throw new Error(message || `Request failed with status ${res.status}`)
   }
 
