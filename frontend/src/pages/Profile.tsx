@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import { fetchMe } from '../api/users'
 import dayjs from 'dayjs'
+import { Link } from 'react-router-dom'
 
 export default function Profile() {
   const { token } = useAuth();
@@ -51,7 +52,7 @@ export default function Profile() {
       <h3>Recently Created Incidents</h3>
       <div className="list">
         {data.createdIncidents.map((inc: any) => (
-          <div key={inc.id} className="card">
+          <Link key={inc.id} to={`/incidents/${inc.id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div
               style={{
                 display: "flex",
@@ -68,7 +69,7 @@ export default function Profile() {
               </div>
               <div>{dayjs(inc.createdAt).format("YYYY-MM-DD HH:mm")}</div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
