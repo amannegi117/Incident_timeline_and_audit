@@ -8,6 +8,7 @@ import { prisma } from './lib/prisma';
 import authRoutes from './routes/auth';
 import incidentRoutes from './routes/incidents';
 import shareRoutes from './routes/share';
+import statsRoutes from "./routes/stats";
 // import 'dotenv/config';
 
 const app = express();
@@ -36,6 +37,7 @@ app.get('/health', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/incidents', incidentRoutes);
 app.use('/share', shareRoutes);
+app.use('/stats', statsRoutes)
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -45,11 +47,11 @@ app.use('*', (req, res) => {
 // Global error handler
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Global error handler:', error);
-  
+
   if (error.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
-  
+
   return res.status(500).json({ error: 'Internal server error' });
 });
 

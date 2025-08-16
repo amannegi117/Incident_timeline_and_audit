@@ -49,6 +49,7 @@ export default function IncidentDetail() {
     onSuccess: () => {
       show('Incident deleted')
       qc.invalidateQueries({ queryKey: ['incidents'] })
+      qc.invalidateQueries({ queryKey: ["stats"] });
       navigate('/incidents')
     }
   })
