@@ -8,52 +8,61 @@ import Navbar from './components/Navbar'
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import About from "./pages/About";
+import Profile from './pages/Profile'
 
 export default function App() {
   return (
     <div>
       <Layout>
-      <div className="container">
-        <Routes>
-          <Route path="/login" element={<Login />} />
+        <div className="container">
+          <Routes>
+            <Route path="/login" element={<Login />} />
 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/incidents"
-            element={
-              <ProtectedRoute>
-                <IncidentsList />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/incidents"
+              element={
+                <ProtectedRoute>
+                  <IncidentsList />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/incidents/:id"
-            element={
-              <ProtectedRoute>
-                <IncidentDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/about" element={<About />} />
-          <Route path="/share/:token" element={<PublicShare />} />
+            <Route
+              path="/incidents/:id"
+              element={
+                <ProtectedRoute>
+                  <IncidentDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/about" element={<About />} />
+            <Route path="/share/:token" element={<PublicShare />} />
 
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </div>
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </div>
       </Layout>
     </div>
-    );
+  );
 }
 
 

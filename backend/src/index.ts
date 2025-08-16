@@ -9,6 +9,7 @@ import authRoutes from './routes/auth';
 import incidentRoutes from './routes/incidents';
 import shareRoutes from './routes/share';
 import statsRoutes from "./routes/stats";
+import usersRoutes from "./routes/stats";
 // import 'dotenv/config';
 
 const app = express();
@@ -37,7 +38,8 @@ app.get('/health', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/incidents', incidentRoutes);
 app.use('/share', shareRoutes);
-app.use('/stats', statsRoutes)
+app.use('/stats', statsRoutes);
+app.use('/users', usersRoutes)
 
 // 404 handler
 app.use('*', (req, res) => {

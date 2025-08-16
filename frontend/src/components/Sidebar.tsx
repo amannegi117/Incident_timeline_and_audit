@@ -33,6 +33,13 @@ export default function Sidebar() {
           <span className="icon">ℹ️</span>
           <span>About</span>
         </Link>
+
+        {token && (
+          <Link className={isActive("/profile") ? "active" : ""} to="/profile">
+            <span className="icon">👤</span>
+            <span>Profile</span>
+          </Link>
+        )}
       </nav>
     </aside>
   );
