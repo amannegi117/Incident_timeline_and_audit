@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="3300" height="1080" viewBox="0 0 3300 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="navGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0b1220"/>
+    </linearGradient>
+    <style>
+      .bg { fill: #f6f8fb; }
+      .nav { fill: url(#navGrad); }
+      .surface { fill: #ffffff; }
+      .border { stroke: #e2e8f0; }
+      .muted { fill: #475569; }
+      .text { fill: #0f172a; }
+      .badgeFill { fill: #f1f5f9; }
+      .badgeText { fill: #0f172a; font-size: 12px; font-weight: 700; }
+      .title { font-size: 24px; font-weight: 800; fill: #0f172a; }
+      .h3 { font-size: 18px; font-weight: 700; fill: #0f172a; }
+      .label { font-size: 12px; font-weight: 600; fill: #6b7280; }
+      .value { font-size: 28px; font-weight: 800; fill: #0f172a; }
+      .link { fill: #1f2937; text-decoration: underline; }
+      .navlink { fill: #e5e7eb; }
+    </style>
+  </defs>
+
+  <!-- DASHBOARD FRAME -->
+  <g id="Dashboard" transform="translate(0,0)">
+    <rect x="0" y="0" width="1100" height="1080" class="bg"/>
+    <!-- Navbar -->
+    <rect x="0" y="0" width="1100" height="64" class="nav"/>
+    <text x="20" y="40" fill="#e5e7eb" font-size="16" font-weight="700">Dashboard</text>
+    <text x="950" y="40" fill="#e5e7eb" font-size="14">user@example.com</text>
+
+    <!-- Sidebar -->
+    <g transform="translate(12,84)">
+      <rect x="0" y="0" rx="12" ry="12" width="236" height="260" class="surface border" stroke-width="1"/>
+      <text x="16" y="36" class="text" font-size="16" font-weight="700">Menu</text>
+      <text x="16" y="76" class="link">Dashboard</text>
+      <text x="16" y="106" class="link">Profile</text>
+      <text x="16" y="136" class="link">About</text>
+      <text x="16" y="166" class="link">New Incident</text>
+    </g>
+
+    <!-- Content -->
+    <g transform="translate(260,84)">
+      <text x="0" y="0" class="title">Dashboard</text>
+
+      <!-- KPI Cards -->
+      <g transform="translate(0,24)">
+        <rect x="0" y="0" rx="12" ry="12" width="260" height="110" class="surface border" stroke-width="1"/>
+        <text x="16" y="36" class="label">Total Users</text>
+        <text x="16" y="78" class="value">123</text>
+
+        <rect x="280" y="0" rx="12" ry="12" width="260" height="110" class="surface border" stroke-width="1"/>
+        <text x="296" y="36" class="label">My Incidents</text>
+        <text x="296" y="78" class="value">5</text>
+      </g>
+
+      <!-- Recent Incidents -->
+      <g transform="translate(0,170)">
+        <text x="0" y="0" class="h3">Recent Incidents</text>
+
+        <!-- Card 1 -->
+        <g transform="translate(0,16)">
+          <rect x="0" y="0" rx="12" ry="12" width="800" height="110" class="surface border" stroke-width="1"/>
+          <text x="16" y="36" class="text" font-weight="700">API latency spike</text>
+          <g transform="translate(16,50)">
+            <rect x="0" y="0" rx="999" ry="999" width="40" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="12" y="14" class="badgeText">P3</text>
+            <rect x="50" y="0" rx="999" ry="999" width="90" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="64" y="14" class="badgeText">IN_REVIEW</text>
+            <rect x="150" y="0" rx="999" ry="999" width="54" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="162" y="14" class="badgeText">api</text>
+            <rect x="210" y="0" rx="999" ry="999" width="74" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="222" y="14" class="badgeText">urgent</text>
+          </g>
+          <text x="680" y="36" class="muted" font-size="12">2025-08-16 10:24</text>
+        </g>
+
+        <!-- Card 2 -->
+        <g transform="translate(0,136)">
+          <rect x="0" y="0" rx="12" ry="12" width="800" height="110" class="surface border" stroke-width="1"/>
+          <text x="16" y="36" class="text" font-weight="700">DB connection errors</text>
+          <g transform="translate(16,50)">
+            <rect x="0" y="0" rx="999" ry="999" width="40" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="12" y="14" class="badgeText">P2</text>
+            <rect x="50" y="0" rx="999" ry="999" width="66" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="64" y="14" class="badgeText">OPEN</text>
+            <rect x="130" y="0" rx="999" ry="999" width="70" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="144" y="14" class="badgeText">db</text>
+          </g>
+          <text x="680" y="36" class="muted" font-size="12">2025-08-15 18:05</text>
+        </g>
+
+        <!-- Card 3 -->
+        <g transform="translate(0,256)">
+          <rect x="0" y="0" rx="12" ry="12" width="800" height="110" class="surface border" stroke-width="1"/>
+          <text x="16" y="36" class="text" font-weight="700">Payment webhook timeouts</text>
+          <g transform="translate(16,50)">
+            <rect x="0" y="0" rx="999" ry="999" width="40" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="12" y="14" class="badgeText">P4</text>
+            <rect x="50" y="0" rx="999" ry="999" width="90" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="64" y="14" class="badgeText">REJECTED</text>
+            <rect x="150" y="0" rx="999" ry="999" width="76" height="20" class="badgeFill border" stroke-width="1"/>
+            <text x="162" y="14" class="badgeText">webhook</text>
+          </g>
+          <text x="680" y="36" class="muted" font-size="12">2025-08-14 09:40</text>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- PROFILE FRAME -->
+  <g id="Profile" transform="translate(1100,0)">
+    <rect x="0" y="0" width="1100" height="1080" class="bg"/>
+    <rect x="0" y="0" width="1100" height="64" class="nav"/>
+    <text x="20" y="40" fill="#e5e7eb" font-size="16" font-weight="700">Profile</text>
+
+    <g transform="translate(12,84)">
+      <rect x="0" y="0" rx="12" ry="12" width="236" height="260" class="surface border" stroke-width="1"/>
+      <text x="16" y="36" class="text" font-size="16" font-weight="700">Menu</text>
+      <text x="16" y="76" class="link">Dashboard</text>
+      <text x="16" y="106" class="link">Profile</text>
+      <text x="16" y="136" class="link">About</text>
+      <text x="16" y="166" class="link">New Incident</text>
+    </g>
+
+    <g transform="translate(260,84)">
+      <text x="0" y="0" class="title">Profile</text>
+      <g transform="translate(0,24)">
+        <rect x="0" y="0" rx="12" ry="12" width="800" height="200" class="surface border" stroke-width="1"/>
+        <text x="16" y="48" class="text" font-weight="700">Name:</text>
+        <text x="150" y="48" class="text">user</text>
+        <text x="16" y="88" class="text" font-weight="700">Email:</text>
+        <text x="150" y="88" class="text">user@example.com</text>
+        <text x="16" y="128" class="text" font-weight="700">Role:</text>
+        <text x="150" y="128" class="text">REPORTER</text>
+        <text x="16" y="168" class="text" font-weight="700">Incidents Reported:</text>
+        <text x="260" y="168" class="text">5</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ABOUT FRAME -->
+  <g id="About" transform="translate(2200,0)">
+    <rect x="0" y="0" width="1100" height="1080" class="bg"/>
+    <rect x="0" y="0" width="1100" height="64" class="nav"/>
+    <text x="20" y="40" fill="#e5e7eb" font-size="16" font-weight="700">About</text>
+
+    <g transform="translate(12,84)">
+      <rect x="0" y="0" rx="12" ry="12" width="236" height="260" class="surface border" stroke-width="1"/>
+      <text x="16" y="36" class="text" font-size="16" font-weight="700">Menu</text>
+      <text x="16" y="76" class="link">Dashboard</text>
+      <text x="16" y="106" class="link">Profile</text>
+      <text x="16" y="136" class="link">About</text>
+      <text x="16" y="166" class="link">New Incident</text>
+    </g>
+
+    <g transform="translate(260,84)">
+      <text x="0" y="0" class="title">About</text>
+      <g transform="translate(0,24)">
+        <rect x="0" y="0" rx="12" ry="12" width="800" height="140" class="surface border" stroke-width="1"/>
+        <text x="16" y="48" class="text">Incident Hub helps teams report, review, and track incidents with timelines,</text>
+        <text x="16" y="76" class="text">reviews, and secure sharing. This dashboard provides quick KPIs and your latest incidents.</text>
+      </g>
+    </g>
+  </g>
+</svg>
