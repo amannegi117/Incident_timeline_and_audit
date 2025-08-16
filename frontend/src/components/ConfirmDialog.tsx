@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useId } from 'react'
 
 type ConfirmDialogProps = {
   open: boolean
@@ -21,12 +21,34 @@ export default function ConfirmDialog({
   onCancel,
   isConfirmDisabled,
 }: ConfirmDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descId = useId()
+
+  useEffect(() => {
+    if (open && dialogRef.current) {
+      // Move focus to dialog on open
+      dialogRef.current.focus()
+    }
+  }, [open])
   if (!open) return null
   return (
     <div className="modal-backdrop" onClick={onCancel}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{title}</h3>
-        {message ? <div style={{ color: '#475569', marginTop: 4 }}>{message}</div> : null}
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={message ? descId : undefined}
+        tabIndex={-1}
+        ref={dialogRef}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onCancel()
+        }}
+      >
+        <h3 id={titleId}>{title}</h3>
+        {message ? <div id={descId} style={{ color: '#475569', marginTop: 4 }}>{message}</div> : null}
         <div className="modal-actions">
           <button className="secondary" type="button" onClick={onCancel}>
             {cancelText}
