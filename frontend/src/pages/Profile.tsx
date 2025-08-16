@@ -1,11 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import { fetchMe } from '../api/users'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
+import { deleteIncident as deleteIncidentApi } from '../api/incidents'
+import { useToast } from '../components/Toast'
 
 export default function Profile() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const qc = useQueryClient();
+  const { show, node } = useToast();
   const { data, isLoading, error } = useQuery({
     queryKey: ["me"],
     queryFn: () => fetchMe(token),
@@ -16,8 +20,19 @@ export default function Profile() {
     return <div style={{ color: "crimson" }}>{(error as any).message}</div>;
   if (!data) return null;
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteIncidentApi(id, token),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['incidents'] });
+      qc.invalidateQueries({ queryKey: ['me'] });
+      qc.invalidateQueries({ queryKey: ['stats'] });
+      show('Incident deleted');
+    },
+  });
+
   return (
     <div>
+      {node}
       <h2>My Profile</h2>
       <div className="card" style={{ display: "grid", gap: 8 }}>
         <div>
@@ -52,7 +67,7 @@ export default function Profile() {
       <h3>Recently Created Incidents</h3>
       <div className="list">
         {data.createdIncidents.map((inc: any) => (
-          <Link key={inc.id} to={`/incidents/${inc.id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div key={inc.id} className="card">
             <div
               style={{
                 display: "flex",
@@ -61,15 +76,33 @@ export default function Profile() {
               }}
             >
               <div>
-                <strong>{inc.title}</strong>
+                <Link to={`/incidents/${inc.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <strong>{inc.title}</strong>
+                </Link>
                 <div>
                   <span className="badge">{inc.severity}</span>
                   <span className="badge">{inc.status}</span>
                 </div>
               </div>
-              <div>{dayjs(inc.createdAt).format("YYYY-MM-DD HH:mm")}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div>{dayjs(inc.createdAt).format("YYYY-MM-DD HH:mm")}</div>
+                {user?.role === 'ADMIN' && (
+                  <button
+                    className="icon-button"
+                    aria-label="Delete incident"
+                    title="Delete incident"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (confirm('Delete this incident?')) deleteMutation.mutate(inc.id);
+                    }}
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
