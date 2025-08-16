@@ -6,6 +6,7 @@ import { useState } from 'react'
 import dayjs from 'dayjs'
 import { marked } from 'marked'
 import { useToast } from '../components/Toast'
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function IncidentDetail() {
   const { id } = useParams()
@@ -16,6 +17,7 @@ export default function IncidentDetail() {
   const navigate = useNavigate()
   const [createdByInput, setCreatedByInput] = useState('')
   const [createdAtInput, setCreatedAtInput] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { data: incident, isLoading, error } = useQuery({
     queryKey: ['incident', id],
@@ -98,12 +100,31 @@ const [revokeToken, setRevokeToken] = useState('')
   return (
     <div>
       {node}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this incident?"
+        message="This action cannot be undone."
+        confirmText={deleteMutation.isPending ? "Deleting..." : "Delete"}
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmOpen(false)}
+        isConfirmDisabled={deleteMutation.isPending}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <h2>{incident.title}</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="primary" onClick={downloadPdf}>Export PDF</button>
-          {user?.role === 'ADMIN' && (
-            <button className="primary" onClick={() => { if (confirm('Delete this incident?')) deleteMutation.mutate() }}>Delete</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="primary" onClick={downloadPdf}>
+            Export PDF
+          </button>
+          {user?.role === "ADMIN" && (
+            <button className="primary" onClick={() => setConfirmOpen(true)}>
+              Delete
+            </button>
           )}
         </div>
       </div>
@@ -114,31 +135,67 @@ const [revokeToken, setRevokeToken] = useState('')
         </div>
         <div style={{ marginTop: 8 }}>
           {incident.tags.map((t) => (
-            <span key={t} className="badge">{t}</span>
+            <span key={t} className="badge">
+              {t}
+            </span>
           ))}
         </div>
-        <div style={{ color: '#475569', marginTop: 8 }}>
-          Created: {dayjs(incident.createdAt).format('YYYY-MM-DD HH:mm')}
+        <div style={{ color: "#475569", marginTop: 8 }}>
+          Created: {dayjs(incident.createdAt).format("YYYY-MM-DD HH:mm")}
         </div>
       </div>
 
       {/* Timeline */}
       <h3>Timeline</h3>
-      <TimelineForm canAdd={user?.role === 'REPORTER'} onAdd={(c) => addTimelineMutation.mutate(c)} loading={addTimelineMutation.isPending} />
+      <TimelineForm
+        canAdd={user?.role === "REPORTER"}
+        onAdd={(c) => addTimelineMutation.mutate(c)}
+        loading={addTimelineMutation.isPending}
+      />
 
       {/* Review */}
-      {(user?.role === 'REVIEWER' || user?.role === 'ADMIN') && (
+      {(user?.role === "REVIEWER" || user?.role === "ADMIN") && (
         <div className="card">
           <h3>Review</h3>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             {canMoveToReview && (
-              <button className="primary" onClick={() => reviewMutation.mutate({ status: 'IN_REVIEW' })}>Move to In Review</button>
+              <button
+                className="primary"
+                onClick={() => reviewMutation.mutate({ status: "IN_REVIEW" })}
+              >
+                Move to In Review
+              </button>
             )}
             {canApproveReject && (
               <>
-                <button className="primary" onClick={() => reviewMutation.mutate({ status: 'APPROVED', comment })}>Approve</button>
-                <button className="primary" onClick={() => reviewMutation.mutate({ status: 'REJECTED', comment })}>Reject</button>
-                <input placeholder="Comment (optional)" value={comment} onChange={(e) => setComment(e.target.value)} />
+                <button
+                  className="primary"
+                  onClick={() =>
+                    reviewMutation.mutate({ status: "APPROVED", comment })
+                  }
+                >
+                  Approve
+                </button>
+                <button
+                  className="primary"
+                  onClick={() =>
+                    reviewMutation.mutate({ status: "REJECTED", comment })
+                  }
+                >
+                  Reject
+                </button>
+                <input
+                  placeholder="Comment (optional)"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
               </>
             )}
           </div>
@@ -146,73 +203,98 @@ const [revokeToken, setRevokeToken] = useState('')
       )}
 
       {/* Share Link */}
-{user?.role === 'ADMIN' && (
-  <div className="card">
-    <h3>Create Share Link</h3>
-    <ShareForm onCreate={(iso) => shareMutation.mutate(iso)} />
-    {shareMutation.data ? (
-      <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
-        <div>
-          <strong>URL:</strong>{' '}
-          <a href={shareMutation.data.url} target="_blank" rel="noreferrer">
-            {shareMutation.data.url}
-          </a>
+      {user?.role === "ADMIN" && (
+        <div className="card">
+          <h3>Create Share Link</h3>
+          <ShareForm onCreate={(iso) => shareMutation.mutate(iso)} />
+          {shareMutation.data ? (
+            <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+              <div>
+                <strong>URL:</strong>{" "}
+                <a
+                  href={shareMutation.data.url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {shareMutation.data.url}
+                </a>
+              </div>
+              <div>
+                <strong>Expires:</strong>{" "}
+                {dayjs(shareMutation.data.expiresAt).format("YYYY-MM-DD HH:mm")}
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button
+                  className="primary"
+                  type="button"
+                  onClick={() =>
+                    revokeMutation.mutate(shareMutation.data.token)
+                  }
+                >
+                  {revokeMutation.isPending ? "Revoking..." : "Revoke"}
+                </button>
+                {dayjs().isBefore(dayjs(shareMutation.data.expiresAt)) && (
+                  <span className="small-muted">Link not expired yet</span>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
-        <div>
-          <strong>Expires:</strong>{' '}
-          {dayjs(shareMutation.data.expiresAt).format('YYYY-MM-DD HH:mm')}
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button
-            className="primary"
-            type="button"
-            onClick={() => revokeMutation.mutate(shareMutation.data.token)}
-          >
-            {revokeMutation.isPending ? 'Revoking...' : 'Revoke'}
-          </button>
-          {dayjs().isBefore(dayjs(shareMutation.data.expiresAt)) && (
-            <span className="small-muted">Link not expired yet</span>
-          )}
-        </div>
-      </div>
-    ) : null}
-  </div>
-)}
+      )}
 
       {/* Edit Incident Metadata */}
-      {(user?.role === 'REPORTER' && incident.status === 'OPEN' && incident.createdBy === user?.id) && (
-        <form
-          className="card"
-          onSubmit={(e) => {
-            e.preventDefault()
-            const payload: { createdBy?: string; createdAt?: string } = {}
-            if (createdByInput && createdByInput !== incident.createdBy) payload.createdBy = createdByInput
-            if (createdAtInput) payload.createdAt = new Date(createdAtInput).toISOString()
-            if (!payload.createdBy && !payload.createdAt) return
-            updateMutation.mutate(payload)
-          }}
-        >
-          <h3>Edit Incident Metadata</h3>
-          <div style={{ display: 'grid', gap: 8 }}>
-            <div>
-              <label>Created By (User ID)</label>
-              <input value={createdByInput} onChange={(e) => setCreatedByInput(e.target.value)} placeholder="user id" />
-              <div className="small-muted">Warning: changing ownership may immediately revoke your access.</div>
+      {user?.role === "REPORTER" &&
+        incident.status === "OPEN" &&
+        incident.createdBy === user?.id && (
+          <form
+            className="card"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const payload: { createdBy?: string; createdAt?: string } = {};
+              if (createdByInput && createdByInput !== incident.createdBy)
+                payload.createdBy = createdByInput;
+              if (createdAtInput)
+                payload.createdAt = new Date(createdAtInput).toISOString();
+              if (!payload.createdBy && !payload.createdAt) return;
+              updateMutation.mutate(payload);
+            }}
+          >
+            <h3>Edit Incident Metadata</h3>
+            <div style={{ display: "grid", gap: 8 }}>
+              <div>
+                <label>Created By (User ID)</label>
+                <input
+                  value={createdByInput}
+                  onChange={(e) => setCreatedByInput(e.target.value)}
+                  placeholder="user id"
+                />
+                <div className="small-muted">
+                  Warning: changing ownership may immediately revoke your
+                  access.
+                </div>
+              </div>
+              <div>
+                <label>Created At</label>
+                <input
+                  type="datetime-local"
+                  value={createdAtInput}
+                  onChange={(e) => setCreatedAtInput(e.target.value)}
+                />
+              </div>
+              <div>
+                <button
+                  className="primary"
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
             </div>
-            <div>
-              <label>Created At</label>
-              <input type="datetime-local" value={createdAtInput} onChange={(e) => setCreatedAtInput(e.target.value)} />
-            </div>
-            <div>
-              <button className="primary" type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
+          </form>
+        )}
     </div>
-  )
+  );
 }
 
 function TimelineForm({ canAdd, onAdd, loading }: { canAdd?: boolean; onAdd: (content: string) => void; loading: boolean }) {

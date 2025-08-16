@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import { fetchMe } from '../api/users'
 import dayjs from 'dayjs'
+import { Link } from 'react-router-dom';
 
 export default function Profile() {
   const { token } = useAuth();
@@ -18,7 +19,10 @@ export default function Profile() {
   return (
     <div>
       <h2>My Profile</h2>
-      <div className="card" style={{ display: "grid", gap: 8 }}>
+      <div
+        className="card"
+        style={{ display: "grid", gap: 8, backgroundColor: "#c5eaecff" }}
+      >
         <div>
           <strong>Email:</strong> {data.email}
         </div>
@@ -30,19 +34,28 @@ export default function Profile() {
           {dayjs(data.createdAt).format("YYYY-MM-DD HH:mm")}
         </div>
         <div className="card-grid">
-          <div className="card stat-card">
+          <div
+            className="card stat-card"
+            style={{ backgroundColor: "#b9edc4ff" }}
+          >
             <div className="stat-label">Incidents</div>
             <div className="stat-value">{data._count.createdIncidents}</div>
           </div>
-          <div className="card stat-card">
+          <div
+            className="card stat-card"
+            style={{ backgroundColor: "#eda9cfff" }}
+          >
             <div className="stat-label">Timeline Items</div>
             <div className="stat-value">{data._count.timelineEvents}</div>
           </div>
-          <div className="card stat-card">
+          <div
+            className="card stat-card"
+            style={{ backgroundColor: "#f1be92ff" }}
+          >
             <div className="stat-label">Reviews</div>
             <div className="stat-value">{data._count.reviews}</div>
           </div>
-          <div className="card stat-card">
+          <div className="card stat-card" style={{ backgroundColor: "#c4a0dfff" }}>
             <div className="stat-label">Share Links</div>
             <div className="stat-value">{data._count.shareLinks}</div>
           </div>
@@ -51,7 +64,7 @@ export default function Profile() {
       <h3>Recently Created Incidents</h3>
       <div className="list">
         {data.createdIncidents.map((inc: any) => (
-          <div key={inc.id} className="card">
+             <Link key={inc.id} to={`/incidents/${inc.id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div
               style={{
                 display: "flex",
@@ -68,7 +81,7 @@ export default function Profile() {
               </div>
               <div>{dayjs(inc.createdAt).format("YYYY-MM-DD HH:mm")}</div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
