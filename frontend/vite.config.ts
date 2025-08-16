@@ -11,6 +11,7 @@ export default defineConfig({
       '/incidents': { target: 'http://backend:3001', changeOrigin: true },
       '/share': { target: 'http://backend:3001', changeOrigin: true },
       '/health': { target: 'http://backend:3001', changeOrigin: true },
+      '/stats': { target: 'http://backend:3001', changeOrigin: true },
     },
   }
 })

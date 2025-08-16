@@ -13,6 +13,7 @@ export default function Navbar() {
   return (
     <nav>
       <div className="nav-inner">
+        <Link to="/dashboard">Dashboard</Link>
         <Link to="/incidents">Incidents</Link>
         <div className="spacer" />
         {token ? (
