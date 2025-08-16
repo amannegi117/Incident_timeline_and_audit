@@ -6,6 +6,7 @@ import { useState } from 'react'
 import dayjs from 'dayjs'
 import { marked } from 'marked'
 import { useToast } from '../components/Toast'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function IncidentDetail() {
   const { id } = useParams()
@@ -16,6 +17,7 @@ export default function IncidentDetail() {
   const navigate = useNavigate()
   const [createdByInput, setCreatedByInput] = useState('')
   const [createdAtInput, setCreatedAtInput] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const { data: incident, isLoading, error } = useQuery({
     queryKey: ['incident', id],
@@ -98,12 +100,21 @@ const [revokeToken, setRevokeToken] = useState('')
   return (
     <div>
       {node}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this incident?"
+        message="This action cannot be undone."
+        confirmText={deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmOpen(false)}
+        isConfirmDisabled={deleteMutation.isPending}
+      />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>{incident.title}</h2>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="primary" onClick={downloadPdf}>Export PDF</button>
           {user?.role === 'ADMIN' && (
-            <button className="primary" onClick={() => { if (confirm('Delete this incident?')) deleteMutation.mutate() }}>Delete</button>
+            <button className="primary" onClick={() => setConfirmOpen(true)}>Delete</button>
           )}
         </div>
       </div>
