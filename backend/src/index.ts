@@ -9,7 +9,7 @@ import authRoutes from './routes/auth';
 import incidentRoutes from './routes/incidents';
 import shareRoutes from './routes/share';
 import statsRoutes from "./routes/stats";
-import usersRoutes from "./routes/stats";
+import usersRoutes from "./routes/users";
 // import 'dotenv/config';
 
 const app = express();

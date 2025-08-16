@@ -34,12 +34,12 @@ export default function Sidebar() {
           <span>About</span>
         </Link>
 
-        {/* {token && (
+        {token && (
           <Link className={isActive("/profile") ? "active" : ""} to="/profile">
             <span className="icon">👤</span>
             <span>Profile</span>
           </Link>
-        )} */}
+        )}
       </nav>
     </aside>
   );
