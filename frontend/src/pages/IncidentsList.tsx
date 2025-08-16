@@ -39,6 +39,7 @@ export default function IncidentsList() {
     createIncident(payload, token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
       show('Incident created')
     },
   })
@@ -47,6 +48,7 @@ export default function IncidentsList() {
     mutationFn: (id: string) => deleteIncidentApi(id, token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
       show('Incident deleted')
     }
   })

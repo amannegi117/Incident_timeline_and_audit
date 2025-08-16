@@ -19,6 +19,7 @@ export default function NewIncident() {
     mutationFn: () => createIncident({ title, severity, tags: tags.split(',').map((s) => s.trim()).filter(Boolean) }, token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
       show('Incident created')
       navigate('/incidents')
     },
