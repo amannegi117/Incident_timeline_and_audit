@@ -13,11 +13,12 @@ export default function Navbar() {
   return (
     <nav>
       <div className="nav-inner">
-        <Link to="/incidents">Incidents</Link>
+        <Link to="/dashboard">Dashboard</Link>
         <div className="spacer" />
         {token ? (
           <>
             <span>{user?.email} ({user?.role})</span>
+            <Link to="/incidents">Incidents</Link>
             <button onClick={onLogout}>Logout</button>
           </>
         ) : (

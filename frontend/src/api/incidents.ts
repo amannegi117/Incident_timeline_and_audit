@@ -8,7 +8,23 @@ export type Incident = {
   tags: string[]
   createdBy: string
   createdAt: string
-  updatedAt: string
+  updatedAt: string,
+    creator?: { id: string; email: string }
+  timelineEvents?: Array<{
+    id: string
+    content: string
+    createdBy: string
+    createdAt: string
+    creator?: { id: string; email: string }
+  }>
+  reviews?: Array<{
+    id: string
+    status: Incident['status']
+    comment?: string
+    reviewedBy: string
+    reviewedAt: string
+    reviewer?: { id: string; email: string }
+  }>
 }
 
 export type ShareLinkResponse = {

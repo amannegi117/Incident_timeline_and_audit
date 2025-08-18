@@ -125,6 +125,23 @@ const [revokeToken, setRevokeToken] = useState('')
       <h3>Timeline</h3>
       <TimelineForm canAdd={user?.role === 'REPORTER'} onAdd={(c) => addTimelineMutation.mutate(c)} loading={addTimelineMutation.isPending} />
 
+      <div className="list">
+        {incident.timelineEvents?.map((ev) => (
+          <div key={ev.id} className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div className="small-muted">
+                  By {ev.creator?.email || ev.createdBy} on {dayjs(ev.createdAt).format('YYYY-MM-DD HH:mm')}
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: 8 }}
+                 className="card"
+                 dangerouslySetInnerHTML={{ __html: marked.parse(ev.content || '') }} />
+          </div>
+        ))}
+      </div>
+
       {/* Review */}
       {(user?.role === 'REVIEWER' || user?.role === 'ADMIN') && (
         <div className="card">
@@ -141,6 +158,24 @@ const [revokeToken, setRevokeToken] = useState('')
               </>
             )}
           </div>
+          {incident.reviews && incident.reviews.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <h4>Past Reviews</h4>
+              <div className="list">
+                {incident.reviews.map((r) => (
+                  <div key={r.id} className="card">
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span className="badge">{r.status}</span>
+                      <span className="small-muted">by {r.reviewer?.email || r.reviewedBy} on {dayjs(r.reviewedAt).format('YYYY-MM-DD HH:mm')}</span>
+                    </div>
+                    {r.comment && (
+                      <div style={{ marginTop: 8 }}>{r.comment}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -129,6 +129,7 @@ function CreateIncident({ onCreate, loading }: { onCreate: (p: { title: string; 
 
   return (
     <form
+      id="new"
       className="card"
       onSubmit={(e) => {
         e.preventDefault()

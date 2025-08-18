@@ -3,11 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { prisma } from './lib/prisma';
-
-// Import routes
 import authRoutes from './routes/auth';
 import incidentRoutes from './routes/incidents';
 import shareRoutes from './routes/share';
+import userRoutes from './routes/users';
+import statsRoutes from './routes/stats';
 // import 'dotenv/config';
 
 const app = express();
@@ -36,6 +36,8 @@ app.get('/health', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/incidents', incidentRoutes);
 app.use('/share', shareRoutes);
+app.use('/users', userRoutes);
+app.use('/stats', statsRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -53,7 +55,6 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
   return res.status(500).json({ error: 'Internal server error' });
 });
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
   await prisma.$disconnect();
