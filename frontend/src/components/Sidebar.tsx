@@ -1,19 +1,46 @@
-import { Link } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Sidebar() {
-  const { token } = useAuth()
-  if (!token) return null
+  const { token } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <aside style={{ width: 240, padding: 12 }}>
-      <div className="card" style={{ position: 'sticky', top: 12 }}>
-        <nav style={{ display: 'grid', gap: 8 }}>
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/profile">Profile</Link>
-          <Link to="/about">About</Link>
-          <Link to="/incidents#new">New Incident</Link>
-        </nav>
+    <aside className="sidebar">
+      <div className="sidebar-header" onClick={() => navigate("/")}>
+        Incident Hub
       </div>
+      <nav className="sidebar-nav">
+        <Link
+          className={isActive("/dashboard") ? "active" : ""}
+          to="/dashboard"
+        >
+          <span className="icon">🏠</span>
+          <span>Dashboard</span>
+        </Link>
+        <Link
+          className={isActive("/incidents") ? "active" : ""}
+          to="/incidents"
+        >
+          <span className="icon">📋</span>
+          <span>Incidents</span>
+        </Link>
+
+        <Link className={isActive("/about") ? "active" : ""} to="/about">
+          <span className="icon">ℹ️</span>
+          <span>About</span>
+        </Link>
+
+        {token && (
+          <Link className={isActive("/profile") ? "active" : ""} to="/profile">
+            <span className="icon">👤</span>
+            <span>Profile</span>
+          </Link>
+        )}
+      </nav>
     </aside>
-  )
+  );
 }

@@ -4,7 +4,8 @@ import { createIncident, fetchIncidents, Incident, deleteIncident as deleteIncid
 import { useAuth } from '../hooks/useAuth'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
-import {useToast} from '../components/Toast'
+import { useToast } from "../components/Toast";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function IncidentsList() {
   const { token, user } = useAuth()
@@ -16,6 +17,7 @@ export default function IncidentsList() {
   const [tag, setTag] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['incidents', { search, severity, dateFrom, dateTo, tag }],
@@ -39,6 +41,7 @@ export default function IncidentsList() {
     createIncident(payload, token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] })
+      qc.invalidateQueries({ queryKey: ["stats"] });
       show('Incident created')
     },
   })
@@ -47,6 +50,7 @@ export default function IncidentsList() {
     mutationFn: (id: string) => deleteIncidentApi(id, token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] })
+      qc.invalidateQueries({ queryKey: ["stats"] });
       show('Incident deleted')
     }
   })
@@ -54,16 +58,32 @@ export default function IncidentsList() {
   return (
     <div>
       {node}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this incident?"
+        message="This action cannot be undone."
+        confirmText={deleteMutation.isPending ? "Deleting..." : "Delete"}
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmOpen(false)}
+        isConfirmDisabled={deleteMutation.isPending}
+      />
       <h2>Incidents</h2>
 
       <div className="filters card">
         <div>
           <label>Search</label>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Title, tag, timeline..." />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Title, tag, timeline..."
+          />
         </div>
         <div>
           <label>Severity</label>
-          <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
+          <select
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value)}
+          >
             <option value="">All</option>
             <option value="P1">P1</option>
             <option value="P2">P2</option>
@@ -73,45 +93,75 @@ export default function IncidentsList() {
         </div>
         <div>
           <label>Tag</label>
-          <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="tag" />
+          <input
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            placeholder="tag"
+          />
         </div>
         <div>
           <label>Date From</label>
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
         </div>
         <div>
           <label>Date To</label>
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
         </div>
       </div>
 
       {user?.role && (
-        <CreateIncident onCreate={(payload) => createMutation.mutate(payload)} loading={createMutation.isPending} />
+        <CreateIncident
+          onCreate={(payload) => createMutation.mutate(payload)}
+          loading={createMutation.isPending}
+        />
       )}
 
       {isLoading && <div>Loading...</div>}
-      {error && <div style={{ color: 'crimson' }}>{(error as any).message}</div>}
+      {error && (
+        <div style={{ color: "crimson" }}>{(error as any).message}</div>
+      )}
 
       <div className="list">
         {data?.data.map((inc) => (
           <div key={inc.id} className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <div>
-                <Link to={`/incidents/${inc.id}`}><strong>{inc.title}</strong></Link>
+                <Link to={`/incidents/${inc.id}`}>
+                  <strong>{inc.title}</strong>
+                </Link>
                 <div>
                   <span className="badge">{inc.severity}</span>
                   <span className="badge">{inc.status}</span>
                   {inc.tags.map((t) => (
-                    <span key={t} className="badge">{t}</span>
+                    <span key={t} className="badge">
+                      {t}
+                    </span>
                   ))}
                 </div>
               </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div>{dayjs(inc.createdAt).format('YYYY-MM-DD HH:mm')}</div>
-                {user?.role === 'ADMIN' && (
-                  <button className="primary" onClick={() => {
-                    if (confirm('Delete this incident?')) deleteMutation.mutate(inc.id)
-                  }}>Delete</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div>{dayjs(inc.createdAt).format("YYYY-MM-DD HH:mm")}</div>
+                {user?.role === "ADMIN" && (
+                  <button
+                    className="primary"
+                    onClick={() => setConfirmOpen(true)}
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             </div>
@@ -119,7 +169,7 @@ export default function IncidentsList() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function CreateIncident({ onCreate, loading }: { onCreate: (p: { title: string; severity: Incident['severity']; tags: string[] }) => void; loading: boolean }) {

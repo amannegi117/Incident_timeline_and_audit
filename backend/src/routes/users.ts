@@ -1,11 +1,11 @@
-import { Router } from 'express'
-import { authenticateToken } from '../middleware/auth'
-import { getMe } from '../controllers/userController'
+import { Router } from "express";
+import { authenticateToken } from "../middleware/auth";
+import { getMe } from "../controllers/userController";
 
-const router = Router()
+const router = Router();
 
-router.use(authenticateToken)
+router.use(authenticateToken);
 
-router.get('/me', getMe)
+router.get("/me",authenticateToken, getMe);
 
-export default router
+export default router;
